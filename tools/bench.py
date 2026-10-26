@@ -11,7 +11,10 @@ no player near, ServerCore treats every mob as inactive: the worst case for the 
 
 RCON port: env BENCH_RCON_PORT (an mc.ps1 instance listens on its game port + 100;
 `./mc.ps1 -List` shows them). Written 2026-10-25 for the instance "tess" (25691).
+To run elsewhere (e.g. on the VPS), BENCH_RCON_DIR points at a directory with rcon.py
+and BENCH_RCON_SECRET at the password file.
 """
+import os
 import random
 import re
 import socket
@@ -19,12 +22,11 @@ import statistics
 import sys
 import time
 
-sys.path.insert(0, r"E:\vscode\minecraft\packs\sep2026\tools")
+sys.path.insert(0, os.environ.get("BENCH_RCON_DIR", r"E:\vscode\minecraft\packs\sep2026\tools"))
 import rcon  # noqa: E402
 
-import os  # noqa: E402
 PORT = int(os.environ.get("BENCH_RCON_PORT", "25691"))
-SECRET = open(r"E:\vscode\minecraft\packs\sep2026\server\rcon.secret").read().strip()
+SECRET = open(os.environ.get("BENCH_RCON_SECRET", r"E:\vscode\minecraft\packs\sep2026\server\rcon.secret")).read().strip()
 CENTERS = [(0, 0), (2000, 0), (0, 2000)]
 MOBS = {"zombie": 45, "skeleton": 45, "creeper": 30, "spider": 20, "cow": 20, "sheep": 20, "chicken": 20}
 

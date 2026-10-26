@@ -1,0 +1,10 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+
+[[mods]]
+modId="dormant_hooks_probe"
+version="0.0.0"
+displayName="Dormant Hooks bench probe"
+description='''Bench-only: logs whether EntityTickEvent fired for the ticks that really ran.'''
+displayTest="IGNORE_SERVER_VERSION"
