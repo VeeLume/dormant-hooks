@@ -72,9 +72,7 @@ only a handful of them.
 
 ## How the two mods meet in `ServerLevel.tickNonPassenger`
 
-NeoForge 21.1.265 (the server's version): the profile shows `fireEntityTickPre`,
-`fireEntityTickPost` and `<Entity>.tick` as **siblings** directly under
-`tickNonPassenger`. As far as I know the patched method is:
+NeoForge 21.1.265 (the server's version), checked in the decompiled source:
 
 ```java
 entity.tickCount++;                       // ServerCore redirects this (see below)
@@ -82,10 +80,12 @@ if (!EventHooks.fireEntityTickPre(entity).isCanceled()) {
     entity.tick();                        // ServerCore wraps this call
     EventHooks.fireEntityTickPost(entity);
 }
-// then tickPassenger for each passenger: same pattern
+// then tickPassenger for each passenger
 ```
 
-Check this against the decompiled NeoForge source before writing the mixin.
+`tickPassenger` calls `rideTick()` and fires **no** EntityTickEvent; these two calls in
+`tickNonPassenger` are the only call sites. No other mod on the live server touches
+them (jar scan 2026-10-26; SubtleEffects mixes into the client level only).
 
 ServerCore 1.5.19 (`me.wesley1808.servercore.mixin.features.activation_range.ServerLevelMixin`,
 checked with javap):
