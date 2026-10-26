@@ -6,8 +6,9 @@
 usage: uv run hook_split.py <proto dir> <file.sparkprofile>
 
 Inside ServerLevel.tickNonPassenger/tickPassenger, every direct child is bucketed by
-frame name; the EntityTickEvent subtrees (EventHooks.fireEntityTickPre/Post) are
-further charged to the first mod frame below them, as in entity_hooks.py.
+frame name; the EntityTickEvent subtrees (EventHooks.fireEntityTickPre/Post, also
+behind MixinExtras wrappers such as dormant-hooks' own) are further charged to the
+first mod frame below them, as in entity_hooks.py.
 """
 import re
 import subprocess
@@ -86,17 +87,28 @@ def walk(i, inside):
                 walk(c, True)  # passengers: counted inside the outer frame already
                 continue
             children[name] += ct
-            m = re.match(r"fireEntityTick(Pre|Post)", cn.method_name)
-            if m:
-                hook_total[m.group(1)] += ct
-                for g in cn.children_refs:
-                    charge(g, m.group(1))
-            else:
-                for g in cn.children_refs:
-                    grand[name][short(nodes[g])] += sum(nodes[g].times)
+            for g in cn.children_refs:
+                grand[name][short(nodes[g])] += sum(nodes[g].times)
+            find_hooks(c)
         return
     for c in n.children_refs:
         walk(c, inside)
+
+
+WRAPPER = re.compile(r"^(?:wrapOperation|wrapWithCondition)\$|^mixinextras\$bridge\$|^call$")
+
+
+def find_hooks(i, depth=4):
+    """A hook frame, directly or behind MixinExtras wrappers (dormant-hooks wraps Pre in a WrapOperation)."""
+    n = nodes[i]
+    m = re.match(r"fireEntityTick(Pre|Post)", n.method_name)
+    if m:
+        hook_total[m.group(1)] += sum(n.times)
+        for g in n.children_refs:
+            charge(g, m.group(1))
+    elif depth > 0 and WRAPPER.match(n.method_name):
+        for c in n.children_refs:
+            find_hooks(c, depth - 1)
 
 
 sys.setrecursionlimit(100000)
