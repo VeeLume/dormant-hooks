@@ -1,0 +1,3 @@
+# Ties this checkout to its Firefly project on machines where no checkout row
+# exists yet; `firefly-mcp hook session-start` registers the row on first use.
+project = "dormant-hooks"
